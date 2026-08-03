@@ -112,8 +112,9 @@ input[type="checkbox"]:checked::after{content:'';position:absolute;left:6px;top:
 .tag-evento{background:var(--tan);color:var(--tan-text);}
 .navbar{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--navbar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:8px 2px calc(24px + env(safe-area-inset-bottom));max-width:480px;margin:0 auto;}
 .navitem{flex:1;text-align:center;cursor:pointer;padding:4px 0;}
-.navicon-wrap{display:inline-block;padding:8px 18px;border-radius:999px;}
-.navitem.active .navicon-wrap{background:var(--pink-strong);}
+.navicon-wrap{position:relative;z-index:1;display:inline-block;padding:8px 18px;border-radius:999px;}
+.nav-indicator{position:absolute;top:0;left:0;width:0;height:0;background:var(--pink-strong);border-radius:999px;z-index:0;transition:left 0.32s cubic-bezier(0.4,0,0.2,1),width 0.32s cubic-bezier(0.4,0,0.2,1),top 0.32s ease,height 0.32s ease;}
+.nav-indicator.no-transition{transition:none;}
 .navicon{display:block;}
 .week-strip{display:flex;background:var(--card-bg);border:none;box-shadow:0 1px 3px var(--card-shadow);border-radius:18px;padding:10px 6px;margin-bottom:14px;}
 .week-col{flex:1;text-align:center;}
@@ -255,6 +256,7 @@ tr.pagado td:first-child .cell-display{color:var(--muted);text-decoration:line-t
 </div>
 
 <div class="navbar">
+  <div class="nav-indicator" id="nav-indicator"></div>
   <div class="navitem active" data-screen="hoy" aria-label="Hoy">
     <span class="navicon-wrap"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="27" height="27" aria-hidden="true">
       <circle cx="12" cy="12" r="4"/>
@@ -1498,6 +1500,24 @@ function refreshAllNavIcons(){
     setNavIconColor(el, el.classList.contains('active'));
   });
 }
+function moveNavIndicator(navitem, animate){
+  const indicator=document.getElementById('nav-indicator');
+  const wrap=navitem.querySelector('.navicon-wrap');
+  const navbar=document.querySelector('.navbar');
+  if(!indicator || !wrap || !navbar) return;
+  if(!animate) indicator.classList.add('no-transition');
+  const navbarRect=navbar.getBoundingClientRect();
+  const wrapRect=wrap.getBoundingClientRect();
+  indicator.style.left=(wrapRect.left-navbarRect.left)+'px';
+  indicator.style.top=(wrapRect.top-navbarRect.top)+'px';
+  indicator.style.width=wrapRect.width+'px';
+  indicator.style.height=wrapRect.height+'px';
+  if(!animate){
+    requestAnimationFrame(function(){
+      indicator.classList.remove('no-transition');
+    });
+  }
+}
 function showScreen(name){
   window.scrollTo(0,0);
   document.documentElement.scrollTop=0;
@@ -1510,6 +1530,7 @@ function showScreen(name){
     const isActive = el.dataset.screen===name;
     el.classList.toggle('active', isActive);
     setNavIconColor(el, isActive);
+    if(isActive) moveNavIndicator(el, true);
   });
   if(name==='hoy') renderHoy();
   if(name==='calendario') renderCalendario();
@@ -1528,10 +1549,16 @@ async function init(){
     el.onclick=function(){ showScreen(el.dataset.screen); };
   });
   fetchTasasIfNeeded();
+  const hoyItem=document.querySelector('.navitem[data-screen="hoy"]');
+  if(hoyItem) moveNavIndicator(hoyItem, false);
   showScreen('hoy');
   if(window.matchMedia){
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', refreshAllNavIcons);
   }
+  window.addEventListener('resize', function(){
+    const active=document.querySelector('.navitem.active');
+    if(active) moveNavIndicator(active, false);
+  });
 }
 document.addEventListener('DOMContentLoaded', init);
 </script>
