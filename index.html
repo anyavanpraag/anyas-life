@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Anya's Life">
 <meta name="theme-color" content="#F4EEE3">
 <title>Anya's Life</title>
@@ -60,7 +60,7 @@
 }
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;background:var(--cream);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
-body{padding-bottom:80px;padding-top:calc(72px + env(safe-area-inset-top));}
+body{padding-bottom:94px;padding-top:calc(72px + env(safe-area-inset-top));}
 .topbar{position:fixed;top:0;left:0;right:0;z-index:40;background:var(--topbar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:calc(10px + env(safe-area-inset-top)) 16px 10px;max-width:480px;margin:0 auto;}
 .topbar-brand{font-size:14px;font-weight:600;color:var(--text2);letter-spacing:0.4px;text-transform:uppercase;}
 .topbar-screen{font-size:22px;font-weight:600;color:var(--text);margin-top:2px;}
@@ -110,7 +110,7 @@ input[type="checkbox"]:checked::after{content:'';position:absolute;left:6px;top:
 .tag-general{background:var(--panel);color:var(--text2);}
 .tag-pagos{background:var(--tan);color:var(--tan-text);}
 .tag-evento{background:var(--tan);color:var(--tan-text);}
-.navbar{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--navbar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:8px 2px calc(10px + env(safe-area-inset-bottom));max-width:480px;margin:0 auto;}
+.navbar{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--navbar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:8px 2px calc(24px + env(safe-area-inset-bottom));max-width:480px;margin:0 auto;}
 .navitem{flex:1;text-align:center;cursor:pointer;padding:4px 0;}
 .navicon-wrap{display:inline-block;padding:8px 18px;border-radius:999px;}
 .navitem.active .navicon-wrap{background:var(--pink-strong);}
