@@ -7,7 +7,7 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Anya's Life">
 <meta name="theme-color" content="#F4EEE3">
 <title>Anya's Life</title>
@@ -21,9 +21,9 @@
   --text:#4A3B32;
   --text2:#8A7A6C;
   --muted:#C9BBA6;
-  --pink:#E7D0CA;
+  --pink:#F4D1D6;
   --pink-text:#7C6357;
-  --pink-strong:#C9A29B;
+  --pink-strong:#E9A3AD;
   --tan:#E6DDCC;
   --tan-text:#7C6357;
   --accent:#B3A28F;
@@ -35,7 +35,7 @@
   --dot-compras:#8B6F47;
   --card-bg:#FFFFFF;
   --card-shadow:rgba(74,55,40,0.08);
-  --topbar-bg:rgba(201,162,155,0.55);
+  --topbar-bg:rgba(233,163,173,0.92);
   --navbar-bg:rgba(230,221,204,0.78);
   --drag-shadow:rgba(0,0,0,0.15);
 }
@@ -63,7 +63,7 @@
 }
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;background:var(--cream);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
-body{padding-bottom:94px;padding-top:calc(72px + env(safe-area-inset-top));}
+body{padding-bottom:82px;padding-top:calc(72px + env(safe-area-inset-top));}
 .topbar{position:fixed;top:0;left:0;right:0;z-index:40;background:var(--topbar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:calc(10px + env(safe-area-inset-top)) 16px 10px;max-width:480px;margin:0 auto;}
 .topbar-brand{font-size:14px;font-weight:600;color:var(--text2);letter-spacing:0.4px;text-transform:uppercase;}
 .topbar-screen{font-size:22px;font-weight:600;color:var(--text);margin-top:2px;}
@@ -113,11 +113,10 @@ input[type="checkbox"]:checked::after{content:'';position:absolute;left:6px;top:
 .tag-general{background:var(--panel);color:var(--text2);}
 .tag-pagos{background:var(--tan);color:var(--tan-text);}
 .tag-evento{background:var(--tan);color:var(--tan-text);}
-.navbar{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--navbar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:8px 2px calc(24px + env(safe-area-inset-bottom));max-width:480px;margin:0 auto;}
+.navbar{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--navbar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:8px 2px calc(12px + env(safe-area-inset-bottom));max-width:480px;margin:0 auto;}
 .navitem{flex:1;text-align:center;cursor:pointer;padding:4px 0;}
 .navicon-wrap{position:relative;z-index:1;display:inline-block;padding:8px 18px;border-radius:999px;}
-.nav-indicator{position:absolute;top:0;left:0;width:0;height:0;background:var(--pink-strong);border-radius:999px;z-index:0;transition:left 0.32s cubic-bezier(0.4,0,0.2,1),width 0.32s cubic-bezier(0.4,0,0.2,1),top 0.32s ease,height 0.32s ease;}
-.nav-indicator.no-transition{transition:none;}
+.nav-indicator{position:absolute;top:0;left:0;background:var(--pink-strong);border-radius:999px;z-index:0;transform:translate(0,0);transition:transform 0.38s cubic-bezier(0.4,0,0.2,1);will-change:transform;cursor:grab;}
 .navicon{display:block;}
 .week-strip{display:flex;background:var(--card-bg);border:none;box-shadow:0 1px 3px var(--card-shadow);border-radius:18px;padding:10px 6px;margin-bottom:14px;}
 .week-col{flex:1;text-align:center;}
@@ -371,7 +370,8 @@ const COMPRAS_CATS=[
   {id:'super',name:'Supermercado'},
   {id:'delivery',name:'Delivery'},
   {id:'farmacia',name:'Farmacia'},
-  {id:'otros',name:'Otros'}
+  {id:'otros',name:'Otros'},
+  {id:'wishlist',name:'Wishlist'}
 ];
 function defaultStore(){
   return {
@@ -783,7 +783,15 @@ function buildAddSimple(container, onAdd, placeholder){
   const input=document.createElement('input'); input.type='text'; input.className='add-input'; input.placeholder='Escribe aquí';
   form.appendChild(input);
   wrap.onclick=()=>{ wrap.classList.add('hidden'); form.classList.remove('hidden'); input.focus(); };
-  input.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); input.blur(); } });
+  input.addEventListener('keydown', function(e){
+    if(e.key==='Enter'){
+      e.preventDefault();
+      const val=input.value.trim();
+      if(val) onAdd(val);
+      input.value='';
+      input.focus();
+    }
+  });
   form.addEventListener('focusout', function(){
     setTimeout(function(){
       if(form.contains(document.activeElement)) return;
@@ -833,18 +841,30 @@ function buildAddDated(container, onAdd, label){
     else{ inTime.disabled=false; if(!inTime.value) inTime.value='23:59'; }
   };
   wrap.onclick=()=>{ wrap.classList.add('hidden'); form.classList.remove('hidden'); input.focus(); };
-  input.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); inDate.focus(); } });
+  const commitAndContinue=function(){
+    const val=input.value.trim();
+    if(val){
+      onAdd({
+        text:val,
+        date: sinCb.checked ? null : (inDate.value||toISO(new Date())),
+        time: (sinCb.checked || sinHoraCb.checked) ? null : (inTime.value||'23:59')
+      });
+    }
+    return !!val;
+  };
+  input.addEventListener('keydown', function(e){
+    if(e.key==='Enter'){
+      e.preventDefault();
+      if(commitAndContinue()){
+        resetFields();
+        input.focus();
+      }
+    }
+  });
   form.addEventListener('focusout', function(){
     setTimeout(function(){
       if(form.contains(document.activeElement)) return;
-      const val=input.value.trim();
-      if(val){
-        onAdd({
-          text:val,
-          date: sinCb.checked ? null : (inDate.value||toISO(new Date())),
-          time: (sinCb.checked || sinHoraCb.checked) ? null : (inTime.value||'23:59')
-        });
-      }
+      commitAndContinue();
       resetFields();
       form.classList.add('hidden'); wrap.classList.remove('hidden');
     },0);
@@ -866,12 +886,24 @@ function buildAddDateRequired(container, onAdd, label){
   const resetFields=()=>{ input.value=''; inDate.value=toISO(new Date()); inTime.value=''; };
   resetFields();
   wrap.onclick=()=>{ wrap.classList.add('hidden'); form.classList.remove('hidden'); input.focus(); };
-  input.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); inDate.focus(); } });
+  const commitAndContinue=function(){
+    const val=input.value.trim();
+    if(val) onAdd({ text:val, date:inDate.value||toISO(new Date()), time:inTime.value||null });
+    return !!val;
+  };
+  input.addEventListener('keydown', function(e){
+    if(e.key==='Enter'){
+      e.preventDefault();
+      if(commitAndContinue()){
+        resetFields();
+        input.focus();
+      }
+    }
+  });
   form.addEventListener('focusout', function(){
     setTimeout(function(){
       if(form.contains(document.activeElement)) return;
-      const val=input.value.trim();
-      if(val) onAdd({ text:val, date:inDate.value||toISO(new Date()), time:inTime.value||null });
+      commitAndContinue();
       resetFields();
       form.classList.add('hidden'); wrap.classList.remove('hidden');
     },0);
@@ -1248,7 +1280,7 @@ function makeEditableDiaMesCell(td, dia, mes, onSave){
 }
 function makeEditableSelectCell(td, value, options, onSave){
   const span=document.createElement('span'); span.className='cell-display'+(!value?' placeholder':'');
-  span.textContent = value ? (value==='Paralelo' ? 'P' : value) : 'Elegir';
+  span.textContent = value ? (value==='Paralelo' ? 'P' : value) : '⌄';
   td.appendChild(span);
   span.onclick=function(){
     const sel=document.createElement('select'); sel.className='cell-input';
@@ -1508,18 +1540,71 @@ function moveNavIndicator(navitem, animate){
   const wrap=navitem.querySelector('.navicon-wrap');
   const navbar=document.querySelector('.navbar');
   if(!indicator || !wrap || !navbar) return;
-  if(!animate) indicator.classList.add('no-transition');
   const navbarRect=navbar.getBoundingClientRect();
   const wrapRect=wrap.getBoundingClientRect();
-  indicator.style.left=(wrapRect.left-navbarRect.left)+'px';
-  indicator.style.top=(wrapRect.top-navbarRect.top)+'px';
+  const x=wrapRect.left-navbarRect.left;
+  const y=wrapRect.top-navbarRect.top;
   indicator.style.width=wrapRect.width+'px';
   indicator.style.height=wrapRect.height+'px';
   if(!animate){
-    requestAnimationFrame(function(){
-      indicator.classList.remove('no-transition');
-    });
+    indicator.style.transition='none';
+    indicator.style.transform='translate('+x+'px,'+y+'px)';
+    void indicator.offsetHeight;
+    indicator.style.transition='';
+  } else {
+    indicator.style.transform='translate('+x+'px,'+y+'px)';
   }
+}
+function initIndicatorDrag(){
+  const indicator=document.getElementById('nav-indicator');
+  const navbar=document.querySelector('.navbar');
+  if(!indicator || !navbar) return;
+  let isDragging=false;
+  let dragStartX=0;
+  const startDrag=function(e){
+    isDragging=true;
+    dragStartX=(e.touches ? e.touches[0].clientX : e.clientX);
+    indicator.style.transition='none';
+    indicator.style.cursor='grabbing';
+  };
+  const onDrag=function(e){
+    if(!isDragging) return;
+    const currentX=(e.touches ? e.touches[0].clientX : e.clientX);
+    const navbarRect=navbar.getBoundingClientRect();
+    const relativeX=currentX-navbarRect.left;
+    const clampedX=Math.max(0, Math.min(relativeX, navbarRect.width));
+    indicator.style.transform='translateX('+clampedX+'px) translateY(0)';
+  };
+  const endDrag=function(e){
+    if(!isDragging) return;
+    isDragging=false;
+    indicator.style.cursor='grab';
+    indicator.style.transition='';
+    const currentX=parseInt(indicator.style.transform.match(/translateX\(([^p]+)px/)[1]);
+    const navbarRect=navbar.getBoundingClientRect();
+    let closestItem=null;
+    let closestDist=Infinity;
+    document.querySelectorAll('.navitem').forEach(function(item){
+      const wrap=item.querySelector('.navicon-wrap');
+      if(!wrap) return;
+      const wrapRect=wrap.getBoundingClientRect();
+      const itemCenterX=wrapRect.left-navbarRect.left+wrapRect.width/2;
+      const dist=Math.abs(itemCenterX-currentX);
+      if(dist<closestDist){
+        closestDist=dist;
+        closestItem=item;
+      }
+    });
+    if(closestItem){
+      showScreen(closestItem.dataset.screen);
+    }
+  };
+  indicator.addEventListener('mousedown', startDrag);
+  indicator.addEventListener('touchstart', startDrag, {passive:false});
+  document.addEventListener('mousemove', onDrag);
+  document.addEventListener('touchmove', onDrag, {passive:false});
+  document.addEventListener('mouseup', endDrag);
+  document.addEventListener('touchend', endDrag);
 }
 function showScreen(name){
   window.scrollTo(0,0);
@@ -1554,6 +1639,7 @@ async function init(){
   fetchTasasIfNeeded();
   const hoyItem=document.querySelector('.navitem[data-screen="hoy"]');
   if(hoyItem) moveNavIndicator(hoyItem, false);
+  initIndicatorDrag();
   showScreen('hoy');
   if(window.matchMedia){
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', refreshAllNavIcons);
