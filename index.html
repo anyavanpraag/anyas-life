@@ -116,7 +116,7 @@ input[type="checkbox"]:checked::after{content:'';position:absolute;left:6px;top:
 .navbar{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--navbar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:8px 2px calc(12px + env(safe-area-inset-bottom));max-width:480px;margin:0 auto;}
 .navitem{flex:1;text-align:center;cursor:pointer;padding:4px 0;}
 .navicon-wrap{position:relative;z-index:1;display:inline-block;padding:8px 18px;border-radius:999px;}
-.nav-indicator{position:absolute;top:0;left:0;background:var(--pink-strong);border-radius:999px;z-index:0;transform:translate(0,0);transition:transform 0.38s cubic-bezier(0.4,0,0.2,1);will-change:transform;cursor:grab;}
+.nav-indicator{position:absolute;top:0;left:0;background:var(--pink-strong);border-radius:999px;z-index:0;transform:translate(0,0);transition:transform 0.38s cubic-bezier(0.4,0,0.2,1);will-change:transform;}
 .navicon{display:block;}
 .week-strip{display:flex;background:var(--card-bg);border:none;box-shadow:0 1px 3px var(--card-shadow);border-radius:18px;padding:10px 6px;margin-bottom:14px;}
 .week-col{flex:1;text-align:center;}
@@ -1555,59 +1555,8 @@ function moveNavIndicator(navitem, animate){
     indicator.style.transform='translate('+x+'px,'+y+'px)';
   }
 }
-function initIndicatorDrag(){
-  const indicator=document.getElementById('nav-indicator');
-  const navbar=document.querySelector('.navbar');
-  if(!indicator || !navbar) return;
-  let isDragging=false;
-  let dragStartX=0;
-  const startDrag=function(e){
-    isDragging=true;
-    dragStartX=(e.touches ? e.touches[0].clientX : e.clientX);
-    indicator.style.transition='none';
-    indicator.style.cursor='grabbing';
-  };
-  const onDrag=function(e){
-    if(!isDragging) return;
-    const currentX=(e.touches ? e.touches[0].clientX : e.clientX);
-    const navbarRect=navbar.getBoundingClientRect();
-    const relativeX=currentX-navbarRect.left;
-    const clampedX=Math.max(0, Math.min(relativeX, navbarRect.width));
-    indicator.style.transform='translateX('+clampedX+'px) translateY(0)';
-  };
-  const endDrag=function(e){
-    if(!isDragging) return;
-    isDragging=false;
-    indicator.style.cursor='grab';
-    indicator.style.transition='';
-    const currentX=parseInt(indicator.style.transform.match(/translateX\(([^p]+)px/)[1]);
-    const navbarRect=navbar.getBoundingClientRect();
-    let closestItem=null;
-    let closestDist=Infinity;
-    document.querySelectorAll('.navitem').forEach(function(item){
-      const wrap=item.querySelector('.navicon-wrap');
-      if(!wrap) return;
-      const wrapRect=wrap.getBoundingClientRect();
-      const itemCenterX=wrapRect.left-navbarRect.left+wrapRect.width/2;
-      const dist=Math.abs(itemCenterX-currentX);
-      if(dist<closestDist){
-        closestDist=dist;
-        closestItem=item;
-      }
-    });
-    if(closestItem){
-      showScreen(closestItem.dataset.screen);
-    }
-  };
-  indicator.addEventListener('mousedown', startDrag);
-  indicator.addEventListener('touchstart', startDrag, {passive:false});
-  document.addEventListener('mousemove', onDrag);
-  document.addEventListener('touchmove', onDrag, {passive:false});
-  document.addEventListener('mouseup', endDrag);
-  document.addEventListener('touchend', endDrag);
-}
 function showScreen(name){
-  setTimeout(function(){ window.scrollTo(0,0); },0);
+  window.scrollTo(0,0);
   document.documentElement.scrollTop=0;
   document.body.scrollTop=0;
   const screenEl=document.getElementById('screen-'+name);
@@ -1615,7 +1564,6 @@ function showScreen(name){
   document.getElementById('topbar-screen').textContent=SCREEN_LABELS[name]||'';
   document.querySelectorAll('.screen').forEach(function(el){
     el.classList.toggle('active', el.id==='screen-'+name);
-    if(el.id==='screen-'+name) el.scrollTop=0;
   });
   document.querySelectorAll('.navitem').forEach(function(el){
     const isActive = el.dataset.screen===name;
@@ -1643,7 +1591,6 @@ async function init(){
   fetchTasasIfNeeded();
   const hoyItem=document.querySelector('.navitem[data-screen="hoy"]');
   if(hoyItem) moveNavIndicator(hoyItem, false);
-  initIndicatorDrag();
   showScreen('hoy');
   if(window.matchMedia){
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', refreshAllNavIcons);
